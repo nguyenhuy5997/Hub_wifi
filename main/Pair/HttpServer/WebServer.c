@@ -321,14 +321,14 @@ static esp_err_t AP_POST_handler(httpd_req_t *req)
 		ESP_LOGI(TAG, "=========== RECEIVED DATA ==========");
 		ESP_LOGI(TAG, "%s", buff_decode);
 		ESP_LOGI(TAG, "====================================");
-		sscanf(buff_decode, "s1=%[^&]&p1=%[^&]&save=", wifi_config.sta.ssid, wifi_config.sta.password);
+		parse_wifi_uri(buff_decode,(char*) wifi_config.sta.ssid,(char*) wifi_config.sta.password);
 	}
 	else
 	{
 		ESP_LOGI(TAG, "=========== RECEIVED DATA ==========");
 		ESP_LOGI(TAG, "%s", buf);
 		ESP_LOGI(TAG, "====================================");
-		sscanf(buf, "s1=%[^&]&p1=%[^&]&save=", wifi_config.sta.ssid, wifi_config.sta.password);
+		parse_wifi_uri(buf,(char*) wifi_config.sta.ssid,(char*) wifi_config.sta.password);
 	}
 
 	esp_wifi_disconnect();
@@ -456,4 +456,30 @@ void urldecode2(char *dst, const char *src)
                 }
         }
         *dst++ = '\0';
+}
+
+void parse_wifi_uri(char * buf, char * s, char * p)
+{
+	char * sub_p = strstr(buf, "p1=");
+	char * sub_s = strstr(buf, "s1=");
+	char * sub_save = strstr(buf, "save=");
+	char * index;
+	if((sub_p != NULL) && (sub_s != NULL) && (sub_save != NULL))
+	{
+	    index = strstr(sub_p,"&");
+	    if (index != NULL) {
+	        int len = strlen(sub_p) - strlen(index) - 3;
+	        strncpy(p, sub_p+3,len);
+	        p[len] = 0;
+	        printf("pass = %s\n", p);
+	    }
+	    index = strstr(sub_s,"&");
+	    if (index != NULL) {
+	        int len = strlen(sub_s) - strlen(index) - 3;
+	        strncpy(s, sub_s+3, len);
+	        s[len] = 0;
+	        printf("ssid = %s\n", s);
+	    }
+
+	}
 }

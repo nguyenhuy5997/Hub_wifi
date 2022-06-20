@@ -13,7 +13,7 @@
 #include "../main/SPIFFS/spiffs_user.h"
 #include "../main/WiFi/WiFi_proc.c"
 #include "../main/Pair/CompatibleMode/AP.h"
-
+#include "../main/Mqtt/mqtt.h"
 #include "common.h"
 #define TAG "MAIN"
 #define BUTTON 0
@@ -44,7 +44,6 @@ void button (void * arg)
 	QueueHandle_t button_events = button_init(PIN_BIT(BUTTON));
 	int press_count = 0;
 	uint32_t capture = 0;
-	bool quick_mode = false;
 	while (true) {
 	    if (xQueueReceive(button_events, &ev, 1000/portTICK_PERIOD_MS)) {
 	        if ((ev.pin == BUTTON) && (ev.event == BUTTON_DOWN)) {
@@ -81,7 +80,6 @@ void app_main(void)
 {
 	esp_log_level_set("BUTTON", ESP_LOG_NONE);
 	xTaskCreate(button, "button", 4096, NULL, 3, NULL);
-//	if(esp_reset_reason() == ESP_RST_POWERON || esp_reset_reason() == ESP_RST_UNKNOWN)
 	init_wifi();
 	mountSPIFFS();
 	get_device_infor(&Device_Infor);
@@ -115,11 +113,10 @@ void app_main(void)
 		  ESP_LOGI(TAG, "Wifi configuration already stored in flash partition called NVS");
 		  ESP_LOGI(TAG, "%s" ,wifi_config.sta.ssid);
 		  ESP_LOGI(TAG, "%s" ,wifi_config.sta.password);
-		  wifi_init_sta(wifi_config);
-		}
-		else
-		{
-		  ESP_LOGI(TAG, "Wifi configuration not found in flash partition called NVS.");
+		  if(wifi_init_sta(wifi_config))
+		  {
+			  mqtt_app_start("mqtt://mqtt.innoway.vn:1883", Device_Infor.id, Device_Infor.token);
+		  }
 		}
 	}
 }

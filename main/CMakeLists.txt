@@ -9,7 +9,8 @@ set(COMPONENT_SRCS "main.c"
 					"../main/jsonUser/json_user.c"
 					"../main/SPIFFS/spiffs_user.c"
 					"../main/WiFi/WiFi_proc.c"
-					"../main/Pair/CompatibleMode/AP.c")
+					"../main/Pair/CompatibleMode/AP.c"
+					"../main/Mqtt/mqtt.c")
 set(COMPONENT_ADD_INCLUDEDIRS "")
 
 register_component()
