@@ -38,6 +38,7 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base,
                                 int32_t event_id, void* event_data)
 {
     if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
+    	ESP_LOGI(TAG, "start connect to AP");
         esp_wifi_connect();
     } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED) {
         if (s_retry_num < CONFIG_ESP_MAXIMUM_RETRY) {
@@ -73,9 +74,10 @@ bool wifi_init_sta(wifi_config_t wifi_config)
                                                         NULL,
                                                         &instance_got_ip));
 
-    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA) );
+    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_APSTA) );
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config) );
     ESP_ERROR_CHECK(esp_wifi_start() );
+//    ESP_ERROR_CHECK(esp_wifi_connect());
 
     ESP_LOGI(TAG, "wifi_init_sta finished.");
 
@@ -83,14 +85,15 @@ bool wifi_init_sta(wifi_config_t wifi_config)
      * number of re-tries (WIFI_FAIL_BIT). The bits are set by event_handler() (see above) */
     EventBits_t bits = xEventGroupWaitBits(s_wifi_event_group_,
             WIFI_CONNECTED_BIT | WIFI_FAIL_BIT,
+            pdTRUE,
             pdFALSE,
-            pdFALSE,
-            portMAX_DELAY);
+            10000/portTICK_PERIOD_MS);
     ESP_ERROR_CHECK(esp_event_handler_instance_unregister(IP_EVENT, IP_EVENT_STA_GOT_IP, instance_got_ip));
 	ESP_ERROR_CHECK(esp_event_handler_instance_unregister(WIFI_EVENT, ESP_EVENT_ANY_ID, instance_any_id));
 	vEventGroupDelete(s_wifi_event_group_);
     /* xEventGroupWaitBits() returns the bits before the call returned, hence we can test which event actually
      * happened. */
+
     if (bits & WIFI_CONNECTED_BIT) {
         ESP_LOGI(TAG, "connected to ap SSID:%s password:%s", wifi_config.sta.ssid, wifi_config.sta.password);
         return true;
@@ -101,7 +104,7 @@ bool wifi_init_sta(wifi_config_t wifi_config)
         ESP_LOGE(TAG, "UNEXPECTED EVENT");
         return false;
     }
-
+    return false;
     /* The event will not be processed after unregister */
 }
 

@@ -13,12 +13,14 @@
 #include "../main/SPIFFS/spiffs_user.h"
 #include "../main/WiFi/WiFi_proc.c"
 #include "../main/Pair/CompatibleMode/AP.h"
+
 #include "common.h"
 #define TAG "MAIN"
 #define BUTTON 0
 
 Device Device_Infor;
-
+__NOINIT_ATTR bool Flag_quick_pair;
+__NOINIT_ATTR bool Flag_compatible_pair;
 void get_device_infor(Device * _device)
 {
 	char buff[513];
@@ -34,6 +36,7 @@ void init_wifi()
 	esp_netif_create_default_wifi_sta();
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK( esp_wifi_init(&cfg) );
+//    esp_wifi_start();
 }
 void button (void * arg)
 {
@@ -53,18 +56,21 @@ void button (void * arg)
 	        	capture = esp_timer_get_time() / 1000;
 	            if(press_count == 5)
 	            {
-	            	if(quick_mode == false)
+	            	if(Flag_quick_pair == false)
 	            	{
-	            		quick_mode = true;
+	            		Flag_compatible_pair = false;
+	            		Flag_quick_pair = true;
 						ESP_LOGI(TAG, "Start Quick Pair");
-						start_smartconfig();
+//						start_smartconfig();
 	            	}
-	            	else
+	            	else if (Flag_compatible_pair == false)
 	            	{
-	            		quick_mode = false;
+	            		Flag_quick_pair = false;
+	            		Flag_compatible_pair = true;
 	            		ESP_LOGI(TAG, "Start Quick Pair");
-	            		wifi_init_softap();
+//	            		wifi_init_softap();
 	            	}
+	            	esp_restart();
 	            	press_count = 0;
 	            }
 	        }
@@ -75,21 +81,46 @@ void app_main(void)
 {
 	esp_log_level_set("BUTTON", ESP_LOG_NONE);
 	xTaskCreate(button, "button", 4096, NULL, 3, NULL);
+//	if(esp_reset_reason() == ESP_RST_POWERON || esp_reset_reason() == ESP_RST_UNKNOWN)
 	init_wifi();
 	mountSPIFFS();
 	get_device_infor(&Device_Infor);
 	ESP_LOGI(TAG, "ID: %s, TOK: %s", Device_Infor.id, Device_Infor.token);
-	wifi_config_t wifi_config;
-	if (esp_wifi_get_config(ESP_IF_WIFI_STA, &wifi_config) == ESP_OK)
+	if( esp_reset_reason() == ESP_RST_UNKNOWN || esp_reset_reason() == ESP_RST_POWERON)
 	{
-	  ESP_LOGI(TAG, "Wifi configuration already stored in flash partition called NVS");
-	  ESP_LOGI(TAG, "%s" ,wifi_config.sta.ssid);
-	  ESP_LOGI(TAG, "%s" ,wifi_config.sta.password);
+		Flag_quick_pair = false;
+		Flag_compatible_pair = false;
 	}
-	else
+	if (Flag_quick_pair)
 	{
-	  ESP_LOGI(TAG, "Wifi configuration not found in flash partition called NVS.");
+		start_smartconfig();
 	}
-	wifi_init_sta(wifi_config);
+	else if (Flag_compatible_pair)
+	{
+		wifi_init_softap();
+	}
+	else if (Flag_quick_pair == false && Flag_compatible_pair == false)
+	{
+		wifi_config_t wifi_config = {
+					.sta = {
+					 .threshold.authmode = WIFI_AUTH_WPA2_PSK,
+						.pmf_cfg = {
+							.capable = true,
+							.required = false
+						},
+					},
+			};
+		if (esp_wifi_get_config(ESP_IF_WIFI_STA, &wifi_config) == ESP_OK)
+		{
+		  ESP_LOGI(TAG, "Wifi configuration already stored in flash partition called NVS");
+		  ESP_LOGI(TAG, "%s" ,wifi_config.sta.ssid);
+		  ESP_LOGI(TAG, "%s" ,wifi_config.sta.password);
+		  wifi_init_sta(wifi_config);
+		}
+		else
+		{
+		  ESP_LOGI(TAG, "Wifi configuration not found in flash partition called NVS.");
+		}
+	}
 }
 

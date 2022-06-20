@@ -19,17 +19,19 @@
 #define AP_WIFI_PASSWORD      ""
 #define CONFIG_ESP_WIFI_CHANNEL       1
 #define CONFIG_ESP_MAX_STA_CONN       2
-
+bool Flag_client_connected = false;
 static const char *TAG = "wifi softAP";
 
 static void wifi_event_handler(void* arg, esp_event_base_t event_base,
                                     int32_t event_id, void* event_data)
 {
     if (event_id == WIFI_EVENT_AP_STACONNECTED) {
+    	Flag_client_connected = true;
         wifi_event_ap_staconnected_t* event = (wifi_event_ap_staconnected_t*) event_data;
         ESP_LOGI(TAG, "station "MACSTR" join, AID=%d",
                  MAC2STR(event->mac), event->aid);
     } else if (event_id == WIFI_EVENT_AP_STADISCONNECTED) {
+    	Flag_client_connected = false;
         wifi_event_ap_stadisconnected_t* event = (wifi_event_ap_stadisconnected_t*) event_data;
         ESP_LOGI(TAG, "station "MACSTR" leave, AID=%d",
                  MAC2STR(event->mac), event->aid);
@@ -38,6 +40,7 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base,
 
 void wifi_init_softap(void)
 {
+	esp_wifi_stop();
 	esp_smartconfig_stop();
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
