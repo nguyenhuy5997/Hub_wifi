@@ -81,9 +81,9 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
 }
 void mqtt_handle(void *arg)
 {
+	cmd command_set;
 	char * item = NULL;
 	size_t item_size;
-	char action[20];
 	while(1)
 	{
 		item = (char *)xRingbufferReceive(buf_handle, &item_size, pdMS_TO_TICKS(1000));
@@ -91,10 +91,17 @@ void mqtt_handle(void *arg)
 		{
 			item[item_size] = NULL;
 			printf("SUB_DATA: %s\r\n", item);
-			JSON_analyze_SUB(item, action);
-			if(strstr(action, "upgrade"))
+			JSON_analyze_SUB(item, &command_set);
+			if(strstr(command_set.action, "upgrade"))
 			{
-				  xTaskCreate(&ota_task, "ota_task", 1024 * 8, NULL, 5, NULL);
+				  if(strlen(command_set.url) > 0)
+				  {
+					  xTaskCreate(&ota_task, "ota_task", 1024 * 8, command_set.url, 5, NULL);
+				  }
+				  else
+				  {
+					  xTaskCreate(&ota_task, "ota_task", 1024 * 8, 0, 5, NULL);
+				  }
 			}
 			vRingbufferReturnItem(buf_handle, (void *)item);
 		}

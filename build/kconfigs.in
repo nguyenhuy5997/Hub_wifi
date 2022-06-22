@@ -5,7 +5,7 @@ source "C:/Users/nguyenphuonglinh/.espressif/frameworks/esp-idf-v4.4/components/
 source "C:/Users/nguyenphuonglinh/.espressif/frameworks/esp-idf-v4.4/components/driver/Kconfig"
 source "C:/Users/nguyenphuonglinh/.espressif/frameworks/esp-idf-v4.4/components/efuse/Kconfig"
 source "C:/Users/nguyenphuonglinh/.espressif/frameworks/esp-idf-v4.4/components/esp-tls/Kconfig"
-source "C:/Users/nguyenphuonglinh/.espressif/frameworks/esp-idf-v4.4/components/esp32c3/Kconfig"
+source "C:/Users/nguyenphuonglinh/.espressif/frameworks/esp-idf-v4.4/components/esp32/Kconfig"
 source "C:/Users/nguyenphuonglinh/.espressif/frameworks/esp-idf-v4.4/components/esp_adc_cal/Kconfig"
 source "C:/Users/nguyenphuonglinh/.espressif/frameworks/esp-idf-v4.4/components/esp_common/Kconfig"
 source "C:/Users/nguyenphuonglinh/.espressif/frameworks/esp-idf-v4.4/components/esp_eth/Kconfig"

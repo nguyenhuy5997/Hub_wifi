@@ -25,7 +25,7 @@
 #include "esp_wifi.h"
 #endif
 
-
+#define URL_OTA_FIXED "http://hubzigbee.s3.amazonaws.com/Hub_zigbee_wifi.bin"
 static const char *TAG = "advanced_https_ota_example";
 extern esp_mqtt_client_handle_t client;
 extern Device Device_Infor;
@@ -57,6 +57,21 @@ static esp_err_t _http_client_init_cb(esp_http_client_handle_t http_client)
 void ota_task(void *pvParameter)
 {
     ESP_LOGI(TAG, "Starting Advanced OTA example");
+    char url[100];
+    printf("1\r\n");
+    if(pvParameter != 0)
+    {
+    	printf("2\r\n");
+    	sprintf(url, "%s", (char*) pvParameter);
+    	printf("url_sv: %s", url);
+    }
+    else
+    {
+    	printf("3\r\n");
+    	sprintf(url, "%s", URL_OTA_FIXED);
+    	printf("url: %s", url);
+    }
+    printf("4\r\n");
     int total_size_ota = 0;
     char pub_topic[100];
     char pub_data[50];
@@ -64,13 +79,13 @@ void ota_task(void *pvParameter)
     int threshold_percent = 0;
     esp_err_t ota_finish_err = ESP_OK;
     esp_http_client_config_t config = {
-        .url = "http://202.191.56.104:5551/uploads/advanced_https_ota.bin",
+        .url = url,
         .timeout_ms = 5000,
         .keep_alive_enable = true,
 		 config.skip_cert_common_name_check = true,
     };
 
-
+    printf("5\r\n");
     esp_https_ota_config_t ota_config = {
         .http_config = &config,
         .http_client_init_cb = _http_client_init_cb, // Register a callback to be invoked after esp_http_client is initialized

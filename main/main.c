@@ -16,7 +16,7 @@
 #include "../main/Mqtt/mqtt.h"
 #include "common.h"
 #define TAG "MAIN"
-#define BUTTON 2
+#define BUTTON 0
 
 Device Device_Infor;
 __NOINIT_ATTR bool Flag_quick_pair;

@@ -11,7 +11,8 @@ set(COMPONENT_SRCS "main.c"
 					"../main/WiFi/WiFi_proc.c"
 					"../main/Pair/CompatibleMode/AP.c"
 					"../main/Mqtt/mqtt.c"
-					"../main/OTA/fota.c")
+					"../main/OTA/fota.c"
+					"../main/common.h")
 set(COMPONENT_ADD_INCLUDEDIRS "")
 
 register_component()
