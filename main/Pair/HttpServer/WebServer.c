@@ -345,6 +345,7 @@ static esp_err_t AP_POST_handler(httpd_req_t *req)
 		printf("\r\n /device resp: %s\r\n", resp_str);
 		printf("Send respond to STA\r\n");
 		httpd_resp_send(req, resp_str, HTTPD_RESP_USE_STRLEN);
+//		ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA) );
 	}
 	else
 	{
