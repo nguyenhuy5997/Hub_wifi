@@ -14,6 +14,7 @@
 #include "../main/WiFi/WiFi_proc.c"
 #include "../main/Pair/CompatibleMode/AP.h"
 #include "../main/Mqtt/mqtt.h"
+#include "../main/webSocket/webSocketAPP.h"
 #include "common.h"
 #define TAG "MAIN"
 #define BUTTON 0
@@ -116,6 +117,7 @@ void app_main(void)
 		  if(wifi_init_sta(wifi_config))
 		  {
 			  mqtt_app_start("mqtt://mqtt.innoway.vn:1883", Device_Infor.id, Device_Infor.token);
+			  websocket_start();
 		  }
 		}
 	}

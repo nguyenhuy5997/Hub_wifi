@@ -12,7 +12,10 @@ set(COMPONENT_SRCS "main.c"
 					"../main/Pair/CompatibleMode/AP.c"
 					"../main/Mqtt/mqtt.c"
 					"../main/OTA/fota.c"
-					"../main/common.h")
+					"../main/common.h"
+					"../main/webSocket/websocket_server.c"
+					"../main/webSocket/websocket.c"
+					"../main/webSocket/websocketAPP.c")
 set(COMPONENT_ADD_INCLUDEDIRS "")
 
 register_component()
