@@ -118,6 +118,7 @@ void app_main(void)
 		  {
 			  mqtt_app_start("mqtt://mqtt.innoway.vn:1883", Device_Infor.id, Device_Infor.token);
 			  websocket_start();
+//			  websocket_stop();
 		  }
 		}
 	}

@@ -15,7 +15,7 @@
 #include "freertos/ringbuf.h"
 #define AP_SSID "esp32"
 #define AP_PSSWD "12345678"
-
+ struct netconn *conn;
 static QueueHandle_t client_queue;
 const static int client_queue_size = 10;
 
@@ -106,7 +106,7 @@ static void http_serve(struct netconn *conn) {
 // handles clients when they first connect. passes to a queue
 static void server_task(void* pvParameters) {
   const static char* TAG = "server_task";
-  struct netconn *conn, *newconn;
+  struct netconn *newconn;
   static err_t err;
   client_queue = xQueueCreate(client_queue_size,sizeof(struct netconn*));
 
@@ -122,10 +122,11 @@ static void server_task(void* pvParameters) {
       //http_serve(newconn);
     }
   } while(err == ERR_OK);
-  netconn_close(conn);
-  netconn_delete(conn);
-  ESP_LOGE(TAG,"task ending, rebooting board");
-  esp_restart();
+//  netconn_close(conn);
+//  netconn_delete(conn);
+  ESP_LOGE(TAG,"task ending");
+//  esp_restart();
+  vTaskDelete(NULL);
 }
 
 // receives clients from queue, handles them
@@ -140,28 +141,6 @@ static void server_handle_task(void* pvParameters) {
   }
   vTaskDelete(NULL);
 }
-
-static void count_task(void* pvParameters) {
-  const static char* TAG = "count_task";
-  char out[20];
-  int len;
-  int clients;
-  const static char* word = "%i";
-  uint8_t n = 0;
-  const int DELAY = 1000 / portTICK_PERIOD_MS; // 1 second
-
-  ESP_LOGI(TAG,"starting task");
-  for(;;) {
-    len = sprintf(out,word,n);
-    clients = ws_server_send_text_all(out,len);
-    if(clients > 0) {
-      //ESP_LOGI(TAG,"sent: \"%s\" to %i clients",out,clients);
-    }
-    n++;
-    vTaskDelay(DELAY);
-  }
-}
-
 
 // handle your incoming msg from socket here
 void in_msg(void *arg)
@@ -198,6 +177,13 @@ void out_msg(void *arg)
 		}
 	}
 }
+void websocket_stop()
+{
+	ws_server_stop();
+	netconn_close(conn);
+    netconn_delete(conn);
+
+}
 void websocket_start()
 {
 	socket_buf_rec = xRingbufferCreate(1028, RINGBUF_TYPE_NOSPLIT);
@@ -213,5 +199,4 @@ void websocket_start()
     xTaskCreate(&in_msg,"in_msg",3000,NULL,9,NULL);
     xTaskCreate(&server_task,"server_task",3000,NULL,9,NULL);
     xTaskCreate(&server_handle_task,"server_handle_task",4000,NULL,6,NULL);
-    xTaskCreate(&count_task,"count_task",6000,NULL,2,NULL);
 }

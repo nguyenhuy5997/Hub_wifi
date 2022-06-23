@@ -11,5 +11,5 @@
 
 
 void websocket_start();
-
+void websocket_stop();
 #endif /* MAIN_WEBSOCKET_WEBSOCKETAPP_H_ */
